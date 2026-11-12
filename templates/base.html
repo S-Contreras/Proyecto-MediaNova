@@ -5,9 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titulo %}MediNova{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
@@ -50,7 +47,7 @@
 
   {% block footer %}
   <footer class="footer">
-    <div class="container">© {% now "Y" %} MediNova · Sistema de Historia Clínica Electrónica</div>
+    <div class="container">© {% now "Y" %} MediNova Sistema de Historia Clínica Electrónica <a href="{% url 'aviso_privacidad' %}">Aviso de privacidad</a></div>
   </footer>
   {% endblock %}
 

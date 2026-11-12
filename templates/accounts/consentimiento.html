@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block titulo %}Consentimiento · MediNova{% endblock %}
+
+{% block contenido %}
+<section class="section">
+  <div class="container">
+    <div class="auth-card consent-card">
+      <h1>Antes de continuar</h1>
+      <p class="muted">Necesitamos su consentimiento para tratar sus datos personales y de salud en MediNova. Lea el <a href="{% url 'aviso_privacidad' %}" target="_blank" rel="noopener">aviso de privacidad integral</a> (se abre en otra pestaña).</p>
+
+      {% if error %}
+      <div class="alert" role="alert">{{ error }}</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <label class="check">
+          <input type="checkbox" name="datos_salud" required>
+          <span><strong>Obligatorio.</strong> Consiento expresamente el tratamiento de mis datos personales y de mis datos de salud (datos sensibles) para las finalidades necesarias descritas en el aviso.</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="asistente_expediente">
+          <span><strong>Opcional.</strong> Consiento que el asistente virtual use la información de mi expediente para ofrecerme recomendaciones generales de cuidado.</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="estadisticas">
+          <span><strong>Opcional.</strong> Consiento el uso de mis datos, sin que me identifiquen, para estadísticas y reportes del Centro de Salud.</span>
+        </label>
+
+        <p class="muted">Las opciones marcadas como opcionales no afectan su atención médica.</p>
+        <button type="submit" class="btn btn-primary btn-block">Guardar y continuar</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

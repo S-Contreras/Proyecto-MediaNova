@@ -6,4 +6,6 @@ urlpatterns = [
     path('', views.redirigir_por_rol, name='redirigir_por_rol'),
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('privacidad/', views.aviso_privacidad, name='aviso_privacidad'),
+    path('privacidad/consentimiento/', views.consentimiento, name='consentimiento'),
 ]

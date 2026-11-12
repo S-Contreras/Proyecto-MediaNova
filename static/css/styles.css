@@ -227,3 +227,17 @@ a.card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- Páginas legales y consentimiento ---------- */
+.legal { max-width: 820px; padding-block: 2rem 3rem; }
+.legal h2 { margin-top: 2rem; font-size: 1.25rem; }
+.legal ul { padding-left: 1.25rem; }
+.legal li { margin-bottom: .4rem; }
+.table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+.legal table { width: 100%; border-collapse: collapse; font-size: .92rem; background: var(--surface); }
+.legal th, .legal td { text-align: left; vertical-align: top; padding: .65rem .8rem; border: 1px solid var(--border); }
+.legal th { background: var(--tint); }
+.consent-card { width: min(100%, 640px); margin-inline: auto; }
+.check { display: flex; gap: .75rem; align-items: flex-start; margin-bottom: 1rem; cursor: pointer; }
+.check input { width: 1.25rem; height: 1.25rem; margin-top: .2rem; flex: none; accent-color: var(--primary); }
+.footer a { color: #fff; }
