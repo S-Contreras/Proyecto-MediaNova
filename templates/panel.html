@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block contenido %}
+<section class="banner">
+  <div class="container">
+    <span class="eyebrow">{{ user.get_rol_display }}</span>
+    <h1>{% block panel_titulo %}{% endblock %}</h1>
+    <p>Bienvenido, {{ user.get_full_name|default:user.username }}.</p>
+  </div>
+</section>
+
+<div class="container">
+  <section class="stats" aria-label="Resumen">
+    {% block stats %}{% endblock %}
+  </section>
+
+  <section class="section">
+    <h2>Accesos rápidos</h2>
+    <div class="card-grid">
+      {% block acciones %}{% endblock %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,9 +1,43 @@
 {% extends 'base.html' %}
+{% block titulo %}Iniciar sesión · MediNova{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
 {% block contenido %}
-<h1>Iniciar sesión</h1>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Entrar</button>
-</form>
+<div class="auth">
+  <aside class="auth-aside">
+    <div class="brand">{% include 'partials/brand.html' %}</div>
+    <div>
+      <h2>Tu historia clínica, segura y en un solo lugar</h2>
+      <p>Consulta expedientes, recetas y citas con acceso según tu rol.</p>
+    </div>
+    <small>© {% now "Y" %} MediNova</small>
+  </aside>
+
+  <div class="auth-main">
+    <div class="auth-card">
+      <div class="brand">{% include 'partials/brand.html' %}</div>
+      <h1>Iniciar sesión</h1>
+      <p class="muted">Ingresa con tu usuario y contraseña.</p>
+
+      {% if form.non_field_errors %}
+      <div class="alert" role="alert">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

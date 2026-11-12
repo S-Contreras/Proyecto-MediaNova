@@ -1,4 +1,36 @@
-{% extends 'base.html' %}
-{% block contenido %}
-<h1>Panel del Administrador</h1>
+{% extends 'panel.html' %}
+{% block titulo %}Panel del Administrador MediNova{% endblock %}
+{% block panel_titulo %}Panel del Administrador{% endblock %}
+
+{% block stats %}
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>—</strong><small>Usuarios</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span><div><strong>—</strong><small>Doctores</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>—</strong><small>Pacientes</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span><div><strong>—</strong><small>Accesos hoy</small></div></div>
+{% endblock %}
+
+{% block acciones %}
+<a class="card" href="{% url 'admin:index' %}">
+  <span class="icon-circle"><svg class="icon"><use href="#i-shield"/></svg></span>
+  <h3>Administración</h3>
+  <p>Crear y editar usuarios</p>
+</a>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span>
+  <h3>Gestión de usuarios</h3>
+  <p>Altas, bajas</p>
+  <span class="badge">Próximamente</span>
+</article>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span>
+  <h3>Bitácora de accesos</h3>
+  <p>Quién entró al sistema y cuándo.</p>
+  <span class="badge">Próximamente</span>
+</article>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
+  <h3>Reportes</h3>
+  <p>Estadísticas generales del sistema.</p>
+  <span class="badge">Próximamente</span>
+</article>
 {% endblock %}

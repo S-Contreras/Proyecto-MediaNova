@@ -1,4 +1,30 @@
-{% extends 'base.html' %}
-{% block contenido %}
-<h1>Panel del Paciente</h1>
+{% extends 'panel.html' %}
+{% block titulo %}Panel del Paciente MediNova{% endblock %}
+{% block panel_titulo %}Panel del Paciente{% endblock %}
+
+{% block stats %}
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-calendar"/></svg></span><div><strong>—</strong><small>Próxima cita</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>—</strong><small>Recetas activas</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span><div><strong>—</strong><small>Consultas previas</small></div></div>
+{% endblock %}
+
+{% block acciones %}
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span>
+  <h3>Mi historial clínico</h3>
+  <p>Revisa tus consultas y diagnósticos.</p>
+  <span class="badge">Próximamente</span>
+</article>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
+  <h3>Mis recetas</h3>
+  <p>Consulta tus medicamentos indicados.</p>
+  <span class="badge">Próximamente</span>
+</article>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-chat"/></svg></span>
+  <h3>Asistente virtual</h3>
+  <p>Resuelve dudas generales de salud.</p>
+  <span class="badge">Próximamente</span>
+</article>
 {% endblock %}

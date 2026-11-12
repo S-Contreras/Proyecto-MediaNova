@@ -1,4 +1,30 @@
-{% extends 'base.html' %}
-{% block contenido %}
-<h1>Panel del Doctor</h1>
+{% extends 'panel.html' %}
+{% block titulo %}Panel del Doctor MediNova{% endblock %}
+{% block panel_titulo %}Panel del Doctor{% endblock %}
+
+{% block stats %}
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>—</strong><small>Pacientes</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-calendar"/></svg></span><div><strong>—</strong><small>Consultas de hoy</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>—</strong><small>Recetas emitidas</small></div></div>
+{% endblock %}
+
+{% block acciones %}
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span>
+  <h3>Mis pacientes</h3>
+  <p>Consulta la lista y los expedientes.</p>
+  <span class="badge">Próximamente</span>
+</article>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-calendar"/></svg></span>
+  <h3>Nueva consulta</h3>
+  <p>Registra notas y diagnósticos.</p>
+  <span class="badge">Próximamente</span>
+</article>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
+  <h3>Recetas</h3>
+  <p>Emite y consulta recetas médicas.</p>
+  <span class="badge">Próximamente</span>
+</article>
 {% endblock %}
