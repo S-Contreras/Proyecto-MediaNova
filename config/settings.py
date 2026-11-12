@@ -152,5 +152,5 @@ MAILERS = {
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'redirigir_por_rol'
 LOGOUT_REDIRECT_URL = 'login'
