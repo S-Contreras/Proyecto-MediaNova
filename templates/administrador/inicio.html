@@ -3,34 +3,117 @@
 {% block panel_titulo %}Panel del Administrador{% endblock %}
 
 {% block stats %}
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>—</strong><small>Usuarios</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span><div><strong>—</strong><small>Doctores</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>—</strong><small>Pacientes</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span><div><strong>—</strong><small>Accesos hoy</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>{{ total_usuarios|default:"0" }}</strong><small>Usuarios</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span><div><strong>{{ total_doctores|default:"0" }}</strong><small>Doctores</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>{{ total_pacientes|default:"0" }}</strong><small>Pacientes</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span><div><strong>{{ accesos_hoy|default:"0" }}</strong><small>Accesos hoy</small></div></div>
 {% endblock %}
 
 {% block acciones %}
 <a class="card" href="{% url 'admin:index' %}">
   <span class="icon-circle"><svg class="icon"><use href="#i-shield"/></svg></span>
   <h3>Administración</h3>
-  <p>Crear y editar usuarios</p>
+  <p>Crear y editar usuarios, perfiles y recetas.</p>
 </a>
-<article class="card">
-  <span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span>
-  <h3>Gestión de usuarios</h3>
-  <p>Altas, bajas</p>
-  <span class="badge">Próximamente</span>
-</article>
-<article class="card">
+<a class="card" href="#bitacora">
   <span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span>
   <h3>Bitácora de accesos</h3>
   <p>Quién entró al sistema y cuándo.</p>
-  <span class="badge">Próximamente</span>
-</article>
+</a>
+<a class="card" href="#recetas">
+  <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
+  <h3>Recetas</h3>
+  <p>Todas las recetas del sistema.</p>
+</a>
 <article class="card">
   <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
   <h3>Reportes</h3>
   <p>Estadísticas generales del sistema.</p>
   <span class="badge">Próximamente</span>
 </article>
+{% endblock %}
+
+{% block detalle %}
+<section class="data-card" id="doctores">
+  <header class="data-card-header">
+    <h2>Doctores</h2><span class="count">{{ doctores|length }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Nombre</th><th>Cédula</th><th>Especialidad</th></tr></thead>
+      <tbody>
+        {% for d in doctores %}
+        <tr>
+          <td><strong>{{ d.usuario.get_full_name }}</strong></td>
+          <td>{{ d.cedula_profesional }}</td>
+          <td>{{ d.especialidad|default:"—" }}</td>
+        </tr>
+        {% empty %}<tr><td class="empty" colspan="3">Sin doctores registrados.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="data-card" id="pacientes">
+  <header class="data-card-header">
+    <h2>Pacientes</h2><span class="count">{{ pacientes|length }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Nombre</th><th>CURP</th><th>Alergias</th><th>Padecimientos</th></tr></thead>
+      <tbody>
+        {% for p in pacientes %}
+        <tr>
+          <td><strong>{{ p.usuario.get_full_name }}</strong></td>
+          <td>{{ p.curp|default:"—" }}</td>
+          <td>{{ p.alergias|default:"—" }}</td>
+          <td>{{ p.padecimientos|default:"—" }}</td>
+        </tr>
+        {% empty %}<tr><td class="empty" colspan="4">Sin pacientes registrados.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="data-card" id="recetas">
+  <header class="data-card-header">
+    <h2>Recetas recientes</h2><span class="count">{{ total_recetas }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Folio</th><th>Fecha</th><th>Paciente</th><th>Doctor</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for r in recetas %}
+        <tr>
+          <td><strong>{{ r.folio }}</strong></td>
+          <td>{{ r.fecha_emision|date:"d/m/Y" }}</td>
+          <td>{{ r.paciente.usuario.get_full_name }}</td>
+          <td>{{ r.doctor }}</td>
+          <td><span class="status status-{{ r.estado|lower }}">{{ r.get_estado_display }}</span></td>
+        </tr>
+        {% empty %}<tr><td class="empty" colspan="5">Sin recetas registradas.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="data-card" id="bitacora">
+  <header class="data-card-header">
+    <h2>Bitácora de accesos</h2><span class="count">{{ bitacora|length }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th></tr></thead>
+      <tbody>
+        {% for b in bitacora %}
+        <tr>
+          <td>{{ b.fecha|date:"d/m/Y H:i" }}</td>
+          <td>{{ b.usuario|default:"—" }}</td>
+          <td><span class="status status-info">{{ b.accion }}</span></td>
+        </tr>
+        {% empty %}<tr><td class="empty" colspan="3">Sin movimientos registrados todavía.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

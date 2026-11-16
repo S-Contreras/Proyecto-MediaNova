@@ -3,28 +3,91 @@
 {% block panel_titulo %}Panel del Doctor{% endblock %}
 
 {% block stats %}
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>—</strong><small>Pacientes</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-calendar"/></svg></span><div><strong>—</strong><small>Consultas de hoy</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>—</strong><small>Recetas emitidas</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>{{ total_pacientes|default:"0" }}</strong><small>Pacientes</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>{{ total_recetas|default:"0" }}</strong><small>Recetas emitidas</small></div></div>
+<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-calendar"/></svg></span><div><strong>{{ recetas_vigentes|default:"0" }}</strong><small>Recetas vigentes</small></div></div>
 {% endblock %}
 
 {% block acciones %}
-<article class="card">
+<a class="card" href="#pacientes">
   <span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span>
   <h3>Mis pacientes</h3>
-  <p>Consulta la lista y los expedientes.</p>
-  <span class="badge">Próximamente</span>
-</article>
-<article class="card">
-  <span class="icon-circle"><svg class="icon"><use href="#i-calendar"/></svg></span>
-  <h3>Nueva consulta</h3>
-  <p>Registra notas y diagnósticos.</p>
-  <span class="badge">Próximamente</span>
-</article>
-<article class="card">
+  <p>Alergias y padecimientos de tus pacientes.</p>
+</a>
+<a class="card" href="#recetas">
   <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
   <h3>Recetas</h3>
-  <p>Emite y consulta recetas médicas.</p>
+  <p>Consulta las recetas que has emitido.</p>
+</a>
+<article class="card">
+  <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
+  <h3>Nueva receta</h3>
+  <p>Emite una receta desde el panel.</p>
   <span class="badge">Próximamente</span>
 </article>
+{% endblock %}
+
+{% block detalle %}
+{% if sin_perfil %}
+<section class="data-card aviso-card">
+  <h2>Perfil incompleto</h2>
+  <p class="muted">Tu usuario no tiene perfil de doctor. Pide al administrador que lo cree.</p>
+</section>
+{% else %}
+<section class="data-card" id="pacientes">
+  <header class="data-card-header">
+    <h2>Mis pacientes</h2><span class="count">{{ asignaciones|length }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Paciente</th><th>Alergias</th><th>Padecimientos</th><th>Desde</th></tr></thead>
+      <tbody>
+        {% for a in asignaciones %}
+        <tr>
+          <td><strong>{{ a.paciente.usuario.get_full_name }}</strong>
+              <span class="cell-sub">{{ a.paciente.usuario.telefono|default:"Sin teléfono" }}</span></td>
+          <td>{{ a.paciente.alergias|default:"—" }}</td>
+          <td>{{ a.paciente.padecimientos|default:"—" }}</td>
+          <td>{{ a.fecha_inicio|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td class="empty" colspan="4">No tienes pacientes asignados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="data-card" id="recetas">
+  <header class="data-card-header">
+    <h2>Recetas emitidas</h2><span class="count">{{ total_recetas }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Folio</th><th>Fecha</th><th>Paciente</th><th>Diagnóstico</th><th>Medicamentos</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for r in recetas %}
+        <tr>
+          <td><strong>{{ r.folio }}</strong></td>
+          <td>{{ r.fecha_emision|date:"d/m/Y" }}</td>
+          <td>{{ r.paciente.usuario.get_full_name }}</td>
+          <td>{{ r.diagnostico|default:"—" }}</td>
+          <td>
+            <ul class="med-list">
+              {% for d in r.detalles.all %}
+              <li><strong>{{ d.medicamento }}</strong>
+                  <span class="cell-sub">{{ d.dosis }} · {{ d.frecuencia }} · {{ d.duracion }}</span></li>
+              {% empty %}<li class="muted">—</li>{% endfor %}
+            </ul>
+          </td>
+          <td><span class="status status-{{ r.estado|lower }}">{{ r.get_estado_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td class="empty" colspan="6">Aún no has emitido recetas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 {% endblock %}
