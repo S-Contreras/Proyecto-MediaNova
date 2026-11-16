@@ -5,9 +5,16 @@ from .models import Consentimiento, User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (('Rol en el sistema', {'fields': ('rol',)}),)
-    add_fieldsets = UserAdmin.add_fieldsets + (('Rol en el sistema', {'fields': ('rol',)}),)
-    list_display = ('username', 'email', 'rol', 'is_active')
+    fieldsets = UserAdmin.fieldsets + (
+        ('Datos del sistema', {'fields': ('rol', 'apellido_materno', 'telefono')}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Datos del sistema', {
+            'fields': ('rol', 'first_name', 'last_name', 'apellido_materno', 'telefono'),
+        }),
+    )
+    list_display = ('username', 'first_name', 'last_name', 'rol', 'is_active')
+    list_filter = ('rol', 'is_active')
 
 @admin.register(Consentimiento)
 class ConsentimientoAdmin(admin.ModelAdmin):

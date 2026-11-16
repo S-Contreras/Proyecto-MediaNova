@@ -241,3 +241,70 @@ a.card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 .check { display: flex; gap: .75rem; align-items: flex-start; margin-bottom: 1rem; cursor: pointer; }
 .check input { width: 1.25rem; height: 1.25rem; margin-top: .2rem; flex: none; accent-color: var(--primary); }
 .footer a { color: #fff; }
+
+/* ---------- Tablas de datos de los paneles ---------- */
+.data-stack {
+  display: flex; flex-direction: column; gap: 1.5rem;
+  padding-bottom: 3rem;
+}
+.data-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  overflow: hidden; scroll-margin-top: 90px;
+}
+.data-card-header {
+  display: flex; align-items: center; gap: .75rem;
+  padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+}
+.data-card-header h2 { margin: 0; font-size: 1.15rem; }
+.data-card-header .count {
+  background: var(--tint); color: var(--primary);
+  font-size: .75rem; font-weight: 700;
+  padding: .15rem .6rem; border-radius: 999px;
+}
+
+.table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.data-table th {
+  text-align: left; white-space: nowrap;
+  background: var(--tint); color: var(--navy);
+  font-size: .75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  padding: .75rem 1.25rem;
+}
+.data-table td {
+  padding: .85rem 1.25rem; vertical-align: top;
+  border-top: 1px solid var(--border);
+}
+.data-table tbody tr:hover { background: var(--bg); }
+.data-table .empty {
+  text-align: center; color: var(--muted); padding: 2rem 1rem;
+}
+.cell-sub { display: block; color: var(--muted); font-size: .82rem; }
+.med-list { list-style: none; margin: 0; padding: 0; }
+.med-list li + li { margin-top: .5rem; }
+
+/* Etiquetas de estado */
+.status {
+  display: inline-block; white-space: nowrap;
+  font-size: .75rem; font-weight: 700;
+  padding: .2rem .65rem; border-radius: 999px;
+  background: #EEF0F6; color: var(--muted);
+}
+.status-vigente { background: #E3F6EA; color: #1B7A3E; }
+.status-surtida, .status-info { background: var(--tint); color: var(--primary); }
+.status-cancelada { background: var(--danger-bg); color: var(--danger); }
+.status-anterior { background: #EEF0F6; color: var(--muted); }
+
+/* Información de salud del paciente */
+.info-grid {
+  display: grid; gap: 1rem; padding: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.info-item { background: var(--bg); border-radius: var(--radius-sm); padding: .9rem 1rem; }
+.info-item small {
+  display: block; margin-bottom: .25rem;
+  color: var(--muted); font-size: .75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.aviso-card { padding: 1.5rem; }

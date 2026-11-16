@@ -10,6 +10,10 @@ class User(AbstractUser):
 
     rol = models.CharField(max_length=10, choices=Rol.choices, default=Rol.PACIENTE)
 
+    # first_name = nombre, last_name = apellido paterno (ya vienen con Django)
+    apellido_materno = models.CharField(max_length=150, blank=True)
+    telefono = models.CharField(max_length=20, blank=True)
+
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.rol = self.Rol.ADMIN
