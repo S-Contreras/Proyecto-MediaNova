@@ -1,44 +1,93 @@
-{% extends 'base.html' %}
-{% block titulo %}Iniciar sesión · MediNova{% endblock %}
-{% block header %}{% endblock %}
-{% block footer %}{% endblock %}
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B1550">
+  <title>Iniciar sesión · MediNova</title>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body class="login">
+  <main class="login-shell">
 
-{% block contenido %}
-<div class="auth">
-  <aside class="auth-aside">
-    <div class="brand">{% include 'partials/brand.html' %}</div>
-    <div>
-      <h2>Tu historia clínica, segura y en un solo lugar</h2>
-      <p>Consulta expedientes, recetas y citas con acceso según tu rol.</p>
-    </div>
-    <small>© {% now "Y" %} MediNova</small>
-  </aside>
+    <section class="brand-panel">
+      <a class="wordmark" href="{% url 'login' %}" aria-label="MediNova, inicio">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+        </span>
+        MediNova
+      </a>
 
-  <div class="auth-main">
-    <div class="auth-card">
-      <div class="brand">{% include 'partials/brand.html' %}</div>
-      <h1>Iniciar sesión</h1>
-      <p class="muted">Ingresa con tu usuario y contraseña.</p>
-
-      {% if form.non_field_errors %}
-      <div class="alert" role="alert">
-        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      <div class="panel-copy">
+        <p class="lema">Cada expediente lo ve solo quien debe verlo.</p>
+        <p class="lema-sub">Pacientes, doctores y administradores entran por la misma puerta. El sistema muestra a cada uno únicamente lo que le corresponde.</p>
       </div>
-      {% endif %}
 
-      <form method="post" novalidate>
-        {% csrf_token %}
-        {% for field in form %}
-        <div class="field">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% for error in field.errors %}<p class="error">{{ error }}</p>{% endfor %}
+      <div class="ecg" aria-hidden="true">
+        <svg viewBox="0 0 1200 240" preserveAspectRatio="xMidYMid meet" focusable="false">
+          <path class="ecg-line" pathLength="1" d="M0,120 H236 L252,106 L268,120 H318 L338,130 L360,34 L384,196 L404,112 L420,120 H516 L540,96 L566,96 L588,120 H700 L720,130 L742,48 L766,184 L786,114 L802,120 H900 L924,100 L948,100 L968,120 H1160"/>
+          <circle class="ecg-dot" r="7"/>
+        </svg>
+      </div>
+
+      <p class="panel-note">Cada inicio de sesión queda registrado en la bitácora del sistema.</p>
+    </section>
+
+    <section class="form-panel">
+      <div class="form-wrap">
+        <h1>Iniciar sesión</h1>
+        <p class="lead">Use el usuario y la contraseña que le dio el centro de salud.</p>
+
+        {% if bloqueado %}
+        <div class="alert" role="alert" id="login-error">
+          <strong>Acceso bloqueado temporalmente</strong>
+          <span>Hubo demasiados intentos fallidos. Espere 15 minutos e intente de nuevo.</span>
         </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
-      </form>
-      <p class="muted">Sus datos de salud se tratan conforme a nuestro <a href="{% url 'aviso_privacidad' %}">aviso de privacidad</a>.</p>
-    </div>
-  </div>
-</div>
-{% endblock %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+        <div class="alert" role="alert" id="login-error">
+          <strong>No se pudo iniciar sesión</strong>
+          {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" id="login-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next }}">
+
+          <div class="field">
+            <label for="id_username">Usuario</label>
+            <input type="text" id="id_username" name="username"
+                   value="{{ form.username.value|default_if_none:'' }}"
+                   autocomplete="username" autocapitalize="none" spellcheck="false"
+                   required autofocus
+                   {% if form.non_field_errors %}aria-invalid="true" aria-describedby="login-error"{% endif %}>
+          </div>
+
+          <div class="field">
+            <label for="id_password">Contraseña</label>
+            <div class="password">
+              <input type="password" id="id_password" name="password"
+                     autocomplete="current-password" required
+                     {% if form.non_field_errors %}aria-invalid="true" aria-describedby="login-error"{% endif %}>
+              <button type="button" class="reveal" aria-controls="id_password" hidden>Mostrar</button>
+            </div>
+            <p class="hint" id="caps-hint" hidden>Bloq Mayús está activado.</p>
+          </div>
+
+          <button type="submit" class="submit">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="submit-label">Iniciar sesión</span>
+          </button>
+        </form>
+
+        <p class="help">¿Olvidó su contraseña? Pida al administrador del centro que la restablezca.</p>
+        <p class="legal">Sus datos de salud se tratan conforme al <a href="{% url 'aviso_privacidad' %}">aviso de privacidad</a>.<br>© {% now "Y" %} MediNova</p>
+      </div>
+    </section>
+
+  </main>
+  <script src="{% static 'js/login.js' %}" defer></script>
+</body>
+</html>

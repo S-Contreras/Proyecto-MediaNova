@@ -156,3 +156,4 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'redirigir_por_rol'
 LOGOUT_REDIRECT_URL = 'login'
 AVISO_VERSION = '1.0'
+

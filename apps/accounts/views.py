@@ -1,17 +1,29 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from .models import Consentimiento
+from .models import Consentimiento, User
 
 
 @login_required
 def redirigir_por_rol(request):
-    destinos = {
-        'ADMIN': 'administrador:inicio',
-        'DOCTOR': 'doctor:inicio',
-        'PACIENTE': 'paciente:inicio',
+    rol_normalizado = (request.user.rol or '').upper()
+
+    if rol_normalizado == User.Rol.PACIENTE:
+        tiene_consentimiento = Consentimiento.objects.filter(
+            usuario=request.user,
+            version_aviso=settings.AVISO_VERSION,
+            datos_salud=True,
+        ).exists()
+        if not tiene_consentimiento:
+            return redirect('consentimiento')
+
+    rutas_por_rol = {
+        User.Rol.ADMIN: 'administrador:inicio',
+        User.Rol.DOCTOR: 'doctor:inicio',
+        User.Rol.PACIENTE: 'paciente:inicio',
     }
-    return redirect(destinos[request.user.rol])
+    destino = rutas_por_rol.get(rol_normalizado, 'login')
+    return redirect(destino)
 
 
 def aviso_privacidad(request):

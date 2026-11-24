@@ -1,31 +1,72 @@
 {% extends 'panel.html' %}
+{% load static %}
+
 {% block titulo %}Panel del Administrador MediNova{% endblock %}
 {% block panel_titulo %}Panel del Administrador{% endblock %}
 
 {% block stats %}
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span><div><strong>{{ total_usuarios|default:"0" }}</strong><small>Usuarios</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span><div><strong>{{ total_doctores|default:"0" }}</strong><small>Doctores</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span><div><strong>{{ total_pacientes|default:"0" }}</strong><small>Pacientes</small></div></div>
-<div class="stat"><span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span><div><strong>{{ accesos_hoy|default:"0" }}</strong><small>Accesos hoy</small></div></div>
+<div class="stat" data-testid="stat-usuarios">
+  <span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span>
+  <div>
+    <strong>{{ total_usuarios|default:"0" }}</strong>
+    <small>Usuarios</small>
+  </div>
+</div>
+<div class="stat" data-testid="stat-doctores">
+  <span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span>
+  <div>
+    <strong>{{ total_doctores|default:"0" }}</strong>
+    <small>Doctores</small>
+  </div>
+</div>
+<div class="stat" data-testid="stat-pacientes">
+  <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
+  <div>
+    <strong>{{ total_pacientes|default:"0" }}</strong>
+    <small>Pacientes</small>
+  </div>
+</div>
+<div class="stat" data-testid="stat-accesos">
+  <span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span>
+  <div>
+    <strong>{{ accesos_hoy|default:"0" }}</strong>
+    <small>Accesos hoy</small>
+  </div>
+</div>
 {% endblock %}
 
 {% block acciones %}
-<a class="card" href="{% url 'admin:index' %}">
+<a class="card" href="#alta-usuario" data-testid="action-crear-usuario">
+  <span class="icon-circle"><svg class="icon"><use href="#i-users"/></svg></span>
+  <h3>Registrar usuario</h3>
+  <p>Crear pacientes, doctores y administradores.</p>
+</a>
+<a class="card" href="#asignar-doctor" data-testid="action-asignar-doctor">
+  <span class="icon-circle"><svg class="icon"><use href="#i-heart"/></svg></span>
+  <h3>Asignar doctor</h3>
+  <p>Vincular o reasignar doctores a pacientes.</p>
+</a>
+<a class="card" href="#usuarios" data-testid="action-usuarios">
+  <span class="icon-circle"><svg class="icon"><use href="#i-shield"/></svg></span>
+  <h3>Usuarios y accesos</h3>
+  <p>Activar o desactivar cuentas del sistema.</p>
+</a>
+<a class="card" href="{% url 'admin:index' %}" data-testid="action-admin">
   <span class="icon-circle"><svg class="icon"><use href="#i-shield"/></svg></span>
   <h3>Administración</h3>
   <p>Crear y editar usuarios, perfiles y recetas.</p>
 </a>
-<a class="card" href="#bitacora">
+<a class="card" href="#bitacora" data-testid="action-bitacora">
   <span class="icon-circle"><svg class="icon"><use href="#i-activity"/></svg></span>
   <h3>Bitácora de accesos</h3>
   <p>Quién entró al sistema y cuándo.</p>
 </a>
-<a class="card" href="#recetas">
+<a class="card" href="#recetas" data-testid="action-recetas">
   <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
   <h3>Recetas</h3>
   <p>Todas las recetas del sistema.</p>
 </a>
-<article class="card">
+<article class="card is-disabled" aria-disabled="true" data-testid="action-reportes">
   <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
   <h3>Reportes</h3>
   <p>Estadísticas generales del sistema.</p>
@@ -34,21 +75,510 @@
 {% endblock %}
 
 {% block detalle %}
-<section class="data-card" id="doctores">
+<link rel="stylesheet" href="{% static 'css/panel_admin.css' %}" />
+
+<style>
+  .table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.08s ease;
+  }
+
+  .btn-action:active {
+    transform: translateY(1px);
+  }
+
+  .btn-action-edit {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border-color: #BFDBFE;
+  }
+
+  .btn-action-edit:hover {
+    background: #DBEAFE;
+    color: #1E40AF;
+  }
+
+  .btn-action-toggle {
+    background: #F8FAFC;
+    color: #0F172A;
+    border-color: #CBD5E1;
+  }
+
+  .btn-action-toggle:hover {
+    background: #E2E8F0;
+  }
+
+  .btn-action-delete {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border-color: #FECACA;
+  }
+
+  .btn-action-delete:hover {
+    background: #FEE2E2;
+    color: #991B1B;
+  }
+
+  /* Ventana emergente (Modal) para editar usuario */
+  .mn-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(11, 30, 74, 0.52);
+    backdrop-filter: blur(3px);
+  }
+
+  .mn-modal-backdrop.is-open {
+    display: flex;
+  }
+
+  .mn-modal-dialog {
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-top: 5px solid #0B1E4A;
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    box-shadow: 0 24px 54px rgba(11, 30, 74, 0.24);
+  }
+
+  .mn-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  .mn-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0B1E4A;
+  }
+
+  .mn-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.15rem 1.35rem;
+  }
+
+  .mn-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+  }
+
+  .mn-modal-field label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0F172A;
+  }
+
+  .mn-modal-field input,
+  .mn-modal-field select {
+    height: 2.7rem;
+    padding: 0 0.9rem;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: #0F172A;
+    font: inherit;
+    font-size: 0.94rem;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .mn-modal-field input:focus,
+  .mn-modal-field select:focus {
+    outline: none;
+    border-color: #1D4ED8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.14);
+  }
+
+  .mn-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid #E2E8F0;
+  }
+
+  @media (max-width: 640px) {
+    .mn-modal-dialog {
+      padding: 1.25rem 1.15rem;
+    }
+
+    .mn-modal-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .mn-modal-footer {
+      flex-direction: column-reverse;
+      align-items: stretch;
+    }
+  }
+</style>
+
+<section class="data-card" id="alta-usuario">
   <header class="data-card-header">
-    <h2>Doctores</h2><span class="count">{{ doctores|length }}</span>
+    <h2>Registrar nuevo usuario</h2>
+  </header>
+
+  <form method="post" action="{% url 'administrador:inicio' %}" class="contact-form" id="form-alta-usuario">
+    {% csrf_token %}
+    <input type="hidden" name="accion" value="crear_usuario">
+
+    <div class="contact-grid">
+      <div class="field-group">
+        <label for="id_new_username">Usuario</label>
+        <input id="id_new_username" name="username" type="text" required autocomplete="off">
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_password">Contraseña</label>
+        <input id="id_new_password" name="password" type="password" required autocomplete="new-password">
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_rol">Rol</label>
+        <select id="id_new_rol" name="rol" required style="height: 2.6rem; padding: 0 0.85rem; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit;">
+          <option value="PACIENTE">Paciente</option>
+          <option value="DOCTOR">Doctor</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_first_name">Nombre(s)</label>
+        <input id="id_new_first_name" name="first_name" type="text" autocomplete="given-name">
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_last_name">Apellido paterno</label>
+        <input id="id_new_last_name" name="last_name" type="text" autocomplete="family-name">
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_apellido_materno">Apellido materno</label>
+        <input id="id_new_apellido_materno" name="apellido_materno" type="text">
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_email">Correo electrónico</label>
+        <input id="id_new_email" name="email" type="email" autocomplete="email">
+      </div>
+
+      <div class="field-group">
+        <label for="id_new_telefono">Teléfono</label>
+        <input id="id_new_telefono" name="telefono" type="tel" autocomplete="tel">
+      </div>
+    </div>
+
+    <!-- Campos exclusivos para Doctor -->
+    <div id="campos-doctor" class="contact-grid" style="display: none;">
+      <div class="field-group">
+        <label for="id_cedula_profesional">Cédula profesional</label>
+        <input id="id_cedula_profesional" name="cedula_profesional" type="text">
+      </div>
+      <div class="field-group">
+        <label for="id_especialidad">Especialidad</label>
+        <input id="id_especialidad" name="especialidad" type="text" placeholder="Ej. Medicina General">
+      </div>
+    </div>
+
+    <!-- Campos exclusivos para Paciente -->
+    <div id="campos-paciente" class="contact-grid">
+      <div class="field-group">
+        <label for="id_curp">CURP</label>
+        <input id="id_curp" name="curp" type="text" maxlength="18">
+      </div>
+      <div class="field-group">
+        <label for="id_fecha_nacimiento">Fecha de nacimiento</label>
+        <input id="id_fecha_nacimiento" name="fecha_nacimiento" type="date">
+      </div>
+      <div class="field-group">
+        <label for="id_sexo">Sexo</label>
+        <select id="id_sexo" name="sexo" style="height: 2.6rem; padding: 0 0.85rem; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit;">
+          <option value="">Selecciona...</option>
+          <option value="F">Femenino</option>
+          <option value="M">Masculino</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="id_tipo_sangre">Tipo de sangre</label>
+        <input id="id_tipo_sangre" name="tipo_sangre" type="text" placeholder="Ej. O+">
+      </div>
+      <div class="field-group">
+        <label for="id_alergias">Alergias</label>
+        <input id="id_alergias" name="alergias" type="text" placeholder="Ej. Ninguna o Penicilina">
+      </div>
+      <div class="field-group">
+        <label for="id_padecimientos">Padecimientos</label>
+        <input id="id_padecimientos" name="padecimientos" type="text" placeholder="Ej. Ninguno registrado">
+      </div>
+      <div class="field-group">
+        <label for="id_doctor_asignado">Asignar doctor (opcional)</label>
+        <select id="id_doctor_asignado" name="doctor_id" style="height: 2.6rem; padding: 0 0.85rem; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit;">
+          <option value="">Sin asignar por ahora</option>
+          {% for doc in doctores_disponibles %}
+          <option value="{{ doc.id }}">{{ doc }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Crear usuario</button>
+    </div>
+  </form>
+</section>
+
+<section class="data-card" id="asignar-doctor">
+  <header class="data-card-header">
+    <h2>Asignar o reasignar Doctor a Paciente</h2>
+    <span class="count">{{ asignaciones|length }} activas</span>
+  </header>
+
+  <form method="post" action="{% url 'administrador:inicio' %}" class="contact-form">
+    {% csrf_token %}
+    <input type="hidden" name="accion" value="asignar_doctor">
+
+    <div class="contact-grid">
+      <div class="field-group">
+        <label for="id_asig_paciente">Paciente</label>
+        <select id="id_asig_paciente" name="paciente_id" required style="height: 2.6rem; padding: 0 0.85rem; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit;">
+          <option value="">Selecciona un paciente...</option>
+          {% for p in pacientes %}
+          <option value="{{ p.id }}">{{ p.usuario.get_full_name|default:p.usuario.username }} ({{ p.curp|default:"Sin CURP" }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="id_asig_doctor">Doctor</label>
+        <select id="id_asig_doctor" name="doctor_id" required style="height: 2.6rem; padding: 0 0.85rem; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit;">
+          <option value="">Selecciona un doctor...</option>
+          {% for d in doctores_disponibles %}
+          <option value="{{ d.id }}">{{ d.usuario.get_full_name|default:d.usuario.username }} — {{ d.especialidad|default:"General" }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Guardar asignación</button>
+    </div>
+  </form>
+</section>
+
+<div class="admin-toolbar" role="region" aria-label="Filtrar registros del panel">
+  <div class="admin-search">
+    <label for="adminFilterInput" class="sr-only">Buscar en usuarios, doctores, pacientes, recetas o bitácora</label>
+    <input
+      id="adminFilterInput"
+      type="search"
+      placeholder="Filtrar por nombre, CURP, cédula, folio o usuario..."
+      autocomplete="off"
+      data-testid="admin-filter-input"
+    />
+    <button type="button" class="btn-clear-filter" id="btnClearFilter" hidden>Limpiar</button>
+  </div>
+  <span class="admin-filter-count" id="adminFilterCount" aria-live="polite"></span>
+</div>
+
+<section class="data-card" id="usuarios">
+  <header class="data-card-header">
+    <h2>Gestión de usuarios y accesos</h2>
+    <span class="count">{{ usuarios|length }}</span>
   </header>
   <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Nombre</th><th>Cédula</th><th>Especialidad</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre completo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td><strong>{{ u.username }}</strong></td>
+          <td>{{ u.get_full_name|default:"—" }} {{ u.apellido_materno }}</td>
+          <td><span class="status status-info">{{ u.get_rol_display }}</span></td>
+          <td>
+            {% if u.is_active %}
+            <span class="status status-activa">Activo</span>
+            {% else %}
+            <span class="status status-cancelada">Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="table-actions">
+              <button
+                type="button"
+                class="btn-action btn-action-edit js-edit-user"
+                data-user-id="{{ u.id }}"
+                data-username="{{ u.username }}"
+                data-rol="{{ u.rol }}"
+                data-first-name="{{ u.first_name }}"
+                data-last-name="{{ u.last_name }}"
+                data-apellido-materno="{{ u.apellido_materno }}"
+                data-email="{{ u.email }}"
+                data-telefono="{{ u.telefono }}"
+              >
+                Editar
+              </button>
+
+              {% if u != request.user %}
+              <form method="post" action="{% url 'administrador:inicio' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="toggle_usuario">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button type="submit" class="btn-action btn-action-toggle">
+                  {% if u.is_active %}Desactivar{% else %}Activar{% endif %}
+                </button>
+              </form>
+
+              <form
+                method="post"
+                action="{% url 'administrador:inicio' %}"
+                style="display:inline;"
+                onsubmit="return confirm('¿Seguro que deseas eliminar permanentemente al usuario {{ u.username }}?');"
+              >
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="eliminar_usuario">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button type="submit" class="btn-action btn-action-delete">
+                  Eliminar
+                </button>
+              </form>
+              {% else %}
+              <span class="muted">Sesión actual</span>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td class="empty" colspan="5">Sin usuarios registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Ventana emergente (Modal) para editar usuario -->
+<div
+  class="mn-modal-backdrop"
+  id="modal-editar-usuario"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="titulo-editar-usuario"
+>
+  <div class="mn-modal-dialog">
+    <div class="mn-modal-header">
+      <h3 id="titulo-editar-usuario">Editar usuario</h3>
+      <button type="button" class="btn-action btn-action-toggle" id="btn-cerrar-editar">Cerrar</button>
+    </div>
+
+    <form method="post" action="{% url 'administrador:inicio' %}" id="form-editar-usuario">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="editar_usuario">
+      <input type="hidden" name="user_id" id="edit_user_id">
+
+      <div class="mn-modal-grid">
+        <div class="mn-modal-field">
+          <label for="edit_first_name">Nombre(s)</label>
+          <input id="edit_first_name" name="first_name" type="text">
+        </div>
+        <div class="mn-modal-field">
+          <label for="edit_last_name">Apellido paterno</label>
+          <input id="edit_last_name" name="last_name" type="text">
+        </div>
+        <div class="mn-modal-field">
+          <label for="edit_apellido_materno">Apellido materno</label>
+          <input id="edit_apellido_materno" name="apellido_materno" type="text">
+        </div>
+        <div class="mn-modal-field">
+          <label for="edit_rol">Rol</label>
+          <select id="edit_rol" name="rol">
+            <option value="PACIENTE">Paciente</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+        <div class="mn-modal-field">
+          <label for="edit_email">Correo electrónico</label>
+          <input id="edit_email" name="email" type="email">
+        </div>
+        <div class="mn-modal-field">
+          <label for="edit_telefono">Teléfono</label>
+          <input id="edit_telefono" name="telefono" type="tel">
+        </div>
+      </div>
+
+      <div class="mn-modal-footer">
+        <button type="button" class="btn-action btn-action-toggle" id="btn-cancelar-editar">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<section class="data-card" id="doctores">
+  <header class="data-card-header">
+    <h2>Doctores</h2>
+    <span class="count">{{ doctores|length }}</span>
+  </header>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Cédula</th>
+          <th>Especialidad</th>
+        </tr>
+      </thead>
       <tbody>
         {% for d in doctores %}
         <tr>
-          <td><strong>{{ d.usuario.get_full_name }}</strong></td>
+          <td><strong>{{ d.usuario.get_full_name|default:d.usuario.username }}</strong></td>
           <td>{{ d.cedula_profesional }}</td>
           <td>{{ d.especialidad|default:"—" }}</td>
         </tr>
-        {% empty %}<tr><td class="empty" colspan="3">Sin doctores registrados.</td></tr>{% endfor %}
+        {% empty %}
+        <tr><td class="empty" colspan="3">Sin doctores registrados.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -56,20 +586,30 @@
 
 <section class="data-card" id="pacientes">
   <header class="data-card-header">
-    <h2>Pacientes</h2><span class="count">{{ pacientes|length }}</span>
+    <h2>Pacientes</h2>
+    <span class="count">{{ pacientes|length }}</span>
   </header>
   <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Nombre</th><th>CURP</th><th>Alergias</th><th>Padecimientos</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>CURP</th>
+          <th>Alergias</th>
+          <th>Padecimientos</th>
+        </tr>
+      </thead>
       <tbody>
         {% for p in pacientes %}
         <tr>
-          <td><strong>{{ p.usuario.get_full_name }}</strong></td>
+          <td><strong>{{ p.usuario.get_full_name|default:p.usuario.username }}</strong></td>
           <td>{{ p.curp|default:"—" }}</td>
           <td>{{ p.alergias|default:"—" }}</td>
           <td>{{ p.padecimientos|default:"—" }}</td>
         </tr>
-        {% empty %}<tr><td class="empty" colspan="4">Sin pacientes registrados.</td></tr>{% endfor %}
+        {% empty %}
+        <tr><td class="empty" colspan="4">Sin pacientes registrados.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -77,21 +617,32 @@
 
 <section class="data-card" id="recetas">
   <header class="data-card-header">
-    <h2>Recetas recientes</h2><span class="count">{{ total_recetas }}</span>
+    <h2>Recetas recientes</h2>
+    <span class="count">{{ total_recetas }}</span>
   </header>
   <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Folio</th><th>Fecha</th><th>Paciente</th><th>Doctor</th><th>Estado</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Fecha</th>
+          <th>Paciente</th>
+          <th>Doctor</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
       <tbody>
         {% for r in recetas %}
         <tr>
           <td><strong>{{ r.folio }}</strong></td>
           <td>{{ r.fecha_emision|date:"d/m/Y" }}</td>
-          <td>{{ r.paciente.usuario.get_full_name }}</td>
+          <td>{{ r.paciente.usuario.get_full_name|default:r.paciente.usuario.username }}</td>
           <td>{{ r.doctor }}</td>
           <td><span class="status status-{{ r.estado|lower }}">{{ r.get_estado_display }}</span></td>
         </tr>
-        {% empty %}<tr><td class="empty" colspan="5">Sin recetas registradas.</td></tr>{% endfor %}
+        {% empty %}
+        <tr><td class="empty" colspan="5">Sin recetas registradas.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -99,11 +650,18 @@
 
 <section class="data-card" id="bitacora">
   <header class="data-card-header">
-    <h2>Bitácora de accesos</h2><span class="count">{{ bitacora|length }}</span>
+    <h2>Bitácora de accesos</h2>
+    <span class="count">{{ bitacora|length }}</span>
   </header>
   <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
       <tbody>
         {% for b in bitacora %}
         <tr>
@@ -111,9 +669,72 @@
           <td>{{ b.usuario|default:"—" }}</td>
           <td><span class="status status-info">{{ b.accion }}</span></td>
         </tr>
-        {% empty %}<tr><td class="empty" colspan="3">Sin movimientos registrados todavía.</td></tr>{% endfor %}
+        {% empty %}
+        <tr><td class="empty" colspan="3">Sin movimientos registrados todavía.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 </section>
+
+<script>
+  (() => {
+    const rolSelect = document.getElementById('id_new_rol');
+    const camposDoctor = document.getElementById('campos-doctor');
+    const camposPaciente = document.getElementById('campos-paciente');
+    if (!rolSelect || !camposDoctor || !camposPaciente) return;
+
+    const actualizarCampos = () => {
+      const rol = rolSelect.value.toUpperCase();
+      camposDoctor.style.display = rol === 'DOCTOR' ? 'grid' : 'none';
+      camposPaciente.style.display = rol === 'PACIENTE' ? 'grid' : 'none';
+    };
+    rolSelect.addEventListener('change', actualizarCampos);
+    actualizarCampos();
+  })();
+</script>
+<script>
+  (() => {
+    const modal = document.getElementById('modal-editar-usuario');
+    const titulo = document.getElementById('titulo-editar-usuario');
+    const btnCerrar = document.getElementById('btn-cerrar-editar');
+    const btnCancelar = document.getElementById('btn-cancelar-editar');
+    if (!modal) return;
+
+    const abrirModal = (btn) => {
+      document.getElementById('edit_user_id').value = btn.dataset.userId || '';
+      document.getElementById('edit_first_name').value = btn.dataset.firstName || '';
+      document.getElementById('edit_last_name').value = btn.dataset.lastName || '';
+      document.getElementById('edit_apellido_materno').value = btn.dataset.apellidoMaterno || '';
+      document.getElementById('edit_rol').value = (btn.dataset.rol || 'PACIENTE').toUpperCase();
+      document.getElementById('edit_email').value = btn.dataset.email || '';
+      document.getElementById('edit_telefono').value = btn.dataset.telefono || '';
+      titulo.textContent = `Editar usuario: ${btn.dataset.username || ''}`;
+      modal.classList.add('is-open');
+      document.getElementById('edit_first_name').focus();
+    };
+
+    const cerrarModal = () => {
+      modal.classList.remove('is-open');
+    };
+
+    document.querySelectorAll('.js-edit-user').forEach((btn) => {
+      btn.addEventListener('click', () => abrirModal(btn));
+    });
+
+    if (btnCerrar) btnCerrar.addEventListener('click', cerrarModal);
+    if (btnCancelar) btnCancelar.addEventListener('click', cerrarModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) cerrarModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+        cerrarModal();
+      }
+    });
+  })();
+</script>
+<script src="{% static 'js/panel_admin.js' %}"></script>
 {% endblock %}

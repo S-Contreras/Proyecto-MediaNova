@@ -4,10 +4,13 @@ from django.core.exceptions import PermissionDenied
 
 
 def rol_requerido(*roles):
+    roles_normalizados = {r.upper() for r in roles}
+
     def decorador(vista):
         @wraps(vista)
         def envoltura(request, *args, **kwargs):
-            if request.user.rol not in roles:
+            rol_usuario = (getattr(request.user, 'rol', '') or '').upper()
+            if rol_usuario not in roles_normalizados:
                 raise PermissionDenied
             return vista(request, *args, **kwargs)
         return login_required(envoltura)

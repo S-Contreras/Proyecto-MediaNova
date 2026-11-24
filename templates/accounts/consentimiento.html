@@ -1,39 +1,82 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block titulo %}Consentimiento · MediNova{% endblock %}
 
 {% block contenido %}
-<section class="section">
-  <div class="container">
-    <div class="auth-card consent-card">
-      <h1>Antes de continuar</h1>
-      <p class="muted">Necesitamos su consentimiento para tratar sus datos personales y de salud en MediNova. Lea el <a href="{% url 'aviso_privacidad' %}" target="_blank" rel="noopener">aviso de privacidad integral</a> (se abre en otra pestaña).</p>
+<link rel="stylesheet" href="{% static 'css/consentimiento.css' %}" />
 
-      {% if error %}
-      <div class="alert" role="alert">{{ error }}</div>
-      {% endif %}
-
-      <form method="post">
-        {% csrf_token %}
-
-        <label class="check">
-          <input type="checkbox" name="datos_salud" required>
-          <span><strong>Obligatorio.</strong> Consiento expresamente el tratamiento de mis datos personales y de mis datos de salud (datos sensibles) para las finalidades necesarias descritas en el aviso.</span>
-        </label>
-
-        <label class="check">
-          <input type="checkbox" name="asistente_expediente">
-          <span><strong>Opcional.</strong> Consiento que el asistente virtual use la información de mi expediente para ofrecerme recomendaciones generales de cuidado.</span>
-        </label>
-
-        <label class="check">
-          <input type="checkbox" name="estadisticas">
-          <span><strong>Opcional.</strong> Consiento el uso de mis datos, sin que me identifiquen, para estadísticas y reportes del Centro de Salud.</span>
-        </label>
-
-        <p class="muted">Las opciones marcadas como opcionales no afectan su atención médica.</p>
-        <button type="submit" class="btn btn-primary btn-block">Guardar y continuar</button>
-      </form>
+<section class="consent-page" aria-labelledby="consentTitle">
+  <div class="consent-card">
+    <div class="consent-header">
+      <div class="consent-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <span>Protección de datos de salud</span>
+      </div>
+      <h1 id="consentTitle">Antes de continuar</h1>
+      <p class="consent-intro">
+        Necesitamos su consentimiento expreso para tratar sus datos personales y clínicos en <strong>MediNova</strong>.
+        Consulte el
+        <a href="{% url 'aviso_privacidad' %}" target="_blank" rel="noopener">aviso de privacidad integral</a>
+        (se abre en una pestaña nueva).
+      </p>
     </div>
+
+    {% if error %}
+    <div class="consent-alert" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form method="post" class="consent-form" id="consentForm" novalidate>
+      {% csrf_token %}
+
+      <label class="consent-option consent-option--required" for="chkDatosSalud">
+        <input type="checkbox" id="chkDatosSalud" name="datos_salud" required>
+        <div class="consent-option-body">
+          <div class="consent-option-top">
+            <span class="pill pill-required">Obligatorio</span>
+            <span class="consent-option-title">Tratamiento de datos personales y de salud</span>
+          </div>
+          <p class="consent-option-desc">
+            Consiento expresamente el tratamiento de mis datos personales y de mis datos de salud (datos sensibles) para la integración y consulta de mi expediente clínico electrónico conforme al aviso de privacidad.
+          </p>
+        </div>
+      </label>
+
+      <label class="consent-option" for="chkEstadisticas">
+        <input type="checkbox" id="chkEstadisticas" name="estadisticas">
+        <div class="consent-option-body">
+          <div class="consent-option-top">
+            <span class="pill pill-optional">Opcional</span>
+            <span class="consent-option-title">Estadísticas y mejora del servicio</span>
+          </div>
+          <p class="consent-option-desc">
+            Consiento el uso de mis datos de forma disociada (sin que me identifiquen) para estadísticas y reportes operativos del Centro de Salud.
+          </p>
+        </div>
+      </label>
+
+      <p class="consent-note">
+        La opción marcada como <strong>Opcional</strong> no condiciona ni afecta su atención médica.
+      </p>
+
+      <div class="consent-actions">
+        <button type="submit" class="btn-consent-submit" id="btnConsentSubmit">
+          Guardar y continuar
+        </button>
+      </div>
+    </form>
   </div>
 </section>
+
+<script src="{% static 'js/consentimiento.js' %}"></script>
 {% endblock %}

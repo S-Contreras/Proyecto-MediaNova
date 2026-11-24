@@ -19,12 +19,11 @@
   <h3>Recetas</h3>
   <p>Consulta las recetas que has emitido.</p>
 </a>
-<article class="card">
+<a class="card" href="#nueva-receta">
   <span class="icon-circle"><svg class="icon"><use href="#i-file"/></svg></span>
   <h3>Nueva receta</h3>
-  <p>Emite una receta desde el panel.</p>
-  <span class="badge">Próximamente</span>
-</article>
+  <p>Registra diagnóstico y medicamentos indicados.</p>
+</a>
 {% endblock %}
 
 {% block detalle %}
@@ -34,6 +33,57 @@
   <p class="muted">Tu usuario no tiene perfil de doctor. Pide al administrador que lo cree.</p>
 </section>
 {% else %}
+<section class="data-card" id="nueva-receta">
+  <header class="data-card-header"><h2>Emitir receta médica</h2></header>
+  <form method="post" action="{% url 'doctor:inicio' %}" class="form-grid" style="padding: 1.25rem; display: grid; gap: 1rem;">
+    {% csrf_token %}
+    <input type="hidden" name="accion" value="emitir_receta">
+
+    <div>
+      <label for="paciente_id"><strong>Paciente asignado</strong></label><br>
+      <select id="paciente_id" name="paciente_id" required style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;">
+        <option value="">Selecciona un paciente...</option>
+        {% for a in asignaciones %}
+        <option value="{{ a.paciente.id }}">{{ a.paciente.usuario.get_full_name|default:a.paciente.usuario.username }} — CURP: {{ a.paciente.curp|default:"—" }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="diagnostico"><strong>Diagnóstico</strong></label><br>
+      <input id="diagnostico" name="diagnostico" type="text" required placeholder="Ej. Faringitis aguda" style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;">
+    </div>
+
+    <div>
+      <label for="indicaciones"><strong>Indicaciones / nota clínica</strong></label><br>
+      <textarea id="indicaciones" name="indicaciones" rows="2" placeholder="Indicaciones generales de consulta..." style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;"></textarea>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+      <div>
+        <label for="medicamento"><strong>Medicamento</strong></label><br>
+        <input id="medicamento" name="medicamento" type="text" placeholder="Ej. Paracetamol 500mg" style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;">
+      </div>
+      <div>
+        <label for="dosis"><strong>Dosis</strong></label><br>
+        <input id="dosis" name="dosis" type="text" placeholder="Ej. 1 tableta" style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;">
+      </div>
+      <div>
+        <label for="frecuencia"><strong>Frecuencia</strong></label><br>
+        <input id="frecuencia" name="frecuencia" type="text" placeholder="Ej. Cada 8 horas" style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;">
+      </div>
+      <div>
+        <label for="duracion"><strong>Duración</strong></label><br>
+        <input id="duracion" name="duracion" type="text" placeholder="Ej. 5 días" style="width: 100%; padding: 0.55rem; margin-top: 0.35rem; border-radius: 8px; border: 1.5px solid #D5DCF2;">
+      </div>
+    </div>
+
+    <div>
+      <button type="submit" class="btn" style="background: #1B33E0; color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Guardar receta</button>
+    </div>
+  </form>
+</section>
+
 <section class="data-card" id="pacientes">
   <header class="data-card-header">
     <h2>Mis pacientes</h2><span class="count">{{ asignaciones|length }}</span>
@@ -44,7 +94,7 @@
       <tbody>
         {% for a in asignaciones %}
         <tr>
-          <td><strong>{{ a.paciente.usuario.get_full_name }}</strong>
+          <td><strong>{{ a.paciente.usuario.get_full_name|default:a.paciente.usuario.username }}</strong>
               <span class="cell-sub">{{ a.paciente.usuario.telefono|default:"Sin teléfono" }}</span></td>
           <td>{{ a.paciente.alergias|default:"—" }}</td>
           <td>{{ a.paciente.padecimientos|default:"—" }}</td>
@@ -70,7 +120,7 @@
         <tr>
           <td><strong>{{ r.folio }}</strong></td>
           <td>{{ r.fecha_emision|date:"d/m/Y" }}</td>
-          <td>{{ r.paciente.usuario.get_full_name }}</td>
+          <td>{{ r.paciente.usuario.get_full_name|default:r.paciente.usuario.username }}</td>
           <td>{{ r.diagnostico|default:"—" }}</td>
           <td>
             <ul class="med-list">

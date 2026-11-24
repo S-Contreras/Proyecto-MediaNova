@@ -9,12 +9,23 @@
   </div>
 </section>
 
+{% if messages %}
+<div class="toast-stack" aria-live="polite">
+  {% for message in messages %}
+  <div class="toast-alert toast-{{ message.tags|default:'info' }}" role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}">
+    <span>{{ message }}</span>
+    <button type="button" class="toast-close" aria-label="Cerrar aviso">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <div class="container">
   <section class="stats" aria-label="Resumen">
     {% block stats %}{% endblock %}
   </section>
 
-  <section class="section">
+  <section class="section" aria-label="Accesos rápidos">
     <h2>Accesos rápidos</h2>
     <div class="card-grid">
       {% block acciones %}{% endblock %}
